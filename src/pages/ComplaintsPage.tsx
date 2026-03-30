@@ -18,7 +18,7 @@ const ComplaintsPage = () => {
 
   const fetchComplaints = async () => {
     let query = supabase.from('complaints').select('*, rooms(room_name, room_number)').order('created_at', { ascending: false });
-    if (filterStatus !== 'all') query = query.eq('status', filterStatus);
+    if (filterStatus !== 'all') query = query.eq('status', filterStatus as any);
     const { data } = await query;
     setComplaints(data || []);
   };
