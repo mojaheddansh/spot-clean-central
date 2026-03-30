@@ -14,16 +14,406 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cleaning_record_items: {
+        Row: {
+          cleaning_record_id: string
+          id: string
+          is_checked: boolean
+          item_name: string
+        }
+        Insert: {
+          cleaning_record_id: string
+          id?: string
+          is_checked?: boolean
+          item_name: string
+        }
+        Update: {
+          cleaning_record_id?: string
+          id?: string
+          is_checked?: boolean
+          item_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cleaning_record_items_cleaning_record_id_fkey"
+            columns: ["cleaning_record_id"]
+            isOneToOne: false
+            referencedRelation: "cleaning_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cleaning_records: {
+        Row: {
+          cleaned_at: string
+          cleaner_id: string
+          id: string
+          notes: string | null
+          room_id: string
+          status: Database["public"]["Enums"]["cleaning_status"]
+        }
+        Insert: {
+          cleaned_at?: string
+          cleaner_id: string
+          id?: string
+          notes?: string | null
+          room_id: string
+          status?: Database["public"]["Enums"]["cleaning_status"]
+        }
+        Update: {
+          cleaned_at?: string
+          cleaner_id?: string
+          id?: string
+          notes?: string | null
+          room_id?: string
+          status?: Database["public"]["Enums"]["cleaning_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cleaning_records_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cleaning_records_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaint_rate_limit: {
+        Row: {
+          created_at: string
+          id: string
+          ip_hash: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_hash: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_hash?: string
+        }
+        Relationships: []
+      }
+      complaints: {
+        Row: {
+          complaint_type: string
+          created_at: string
+          description: string | null
+          guest_name: string | null
+          id: string
+          priority: Database["public"]["Enums"]["complaint_priority"]
+          resolved_at: string | null
+          resolved_by: string | null
+          room_id: string
+          status: Database["public"]["Enums"]["complaint_status"]
+          user_id: string | null
+        }
+        Insert: {
+          complaint_type: string
+          created_at?: string
+          description?: string | null
+          guest_name?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["complaint_priority"]
+          resolved_at?: string | null
+          resolved_by?: string | null
+          room_id: string
+          status?: Database["public"]["Enums"]["complaint_status"]
+          user_id?: string | null
+        }
+        Update: {
+          complaint_type?: string
+          created_at?: string
+          description?: string | null
+          guest_name?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["complaint_priority"]
+          resolved_at?: string | null
+          resolved_by?: string | null
+          room_id?: string
+          status?: Database["public"]["Enums"]["complaint_status"]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          related_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          related_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          related_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          institution_number: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id: string
+          institution_number: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          institution_number?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      room_timelines: {
+        Row: {
+          created_at: string
+          description: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          room_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          room_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          room_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_timelines_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_timelines_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          building: string
+          cleaner_id: string | null
+          created_at: string
+          floor: string
+          id: string
+          is_active: boolean
+          last_cleaned_at: string | null
+          manager_id: string | null
+          qr_token: string
+          room_name: string
+          room_number: string
+          room_type: Database["public"]["Enums"]["room_type"]
+        }
+        Insert: {
+          building: string
+          cleaner_id?: string | null
+          created_at?: string
+          floor: string
+          id?: string
+          is_active?: boolean
+          last_cleaned_at?: string | null
+          manager_id?: string | null
+          qr_token?: string
+          room_name: string
+          room_number: string
+          room_type: Database["public"]["Enums"]["room_type"]
+        }
+        Update: {
+          building?: string
+          cleaner_id?: string | null
+          created_at?: string
+          floor?: string
+          id?: string
+          is_active?: boolean
+          last_cleaned_at?: string | null
+          manager_id?: string | null
+          qr_token?: string
+          room_name?: string
+          room_number?: string
+          room_type?: Database["public"]["Enums"]["room_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rooms_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager" | "cleaner" | "user"
+      cleaning_status: "completed" | "partial"
+      complaint_priority: "low" | "medium" | "high"
+      complaint_status: "new" | "in_review" | "resolved" | "closed"
+      room_type:
+        | "classroom"
+        | "office"
+        | "meeting_room"
+        | "laboratory"
+        | "toilet_wc"
+        | "corridor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +540,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager", "cleaner", "user"],
+      cleaning_status: ["completed", "partial"],
+      complaint_priority: ["low", "medium", "high"],
+      complaint_status: ["new", "in_review", "resolved", "closed"],
+      room_type: [
+        "classroom",
+        "office",
+        "meeting_room",
+        "laboratory",
+        "toilet_wc",
+        "corridor",
+      ],
+    },
   },
 } as const
