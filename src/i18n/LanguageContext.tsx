@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { translations, Language } from './translations';
 
-type TranslationsType = typeof translations.en;
+type TranslationsType = typeof translations['en'];
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: TranslationsType;
+  t: { [K in keyof TranslationsType]: string | Record<string, string> };
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
