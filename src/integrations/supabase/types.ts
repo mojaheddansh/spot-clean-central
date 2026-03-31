@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      class_schedules: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          instructor_name: string | null
+          is_active: boolean
+          note: string | null
+          room_id: string
+          semester: string
+          start_time: string
+          subject_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          instructor_name?: string | null
+          is_active?: boolean
+          note?: string | null
+          room_id: string
+          semester?: string
+          start_time: string
+          subject_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          instructor_name?: string | null
+          is_active?: boolean
+          note?: string | null
+          room_id?: string
+          semester?: string
+          start_time?: string
+          subject_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_schedules_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cleaning_record_items: {
         Row: {
           cleaning_record_id: string
