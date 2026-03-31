@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { AppLayout } from '@/components/AppLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RoleBadge } from '@/components/StatusBadges';
 import { Plus, Search } from 'lucide-react';
@@ -20,6 +18,7 @@ const UsersPage = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '', institution_number: '', role: 'user', password: '',
   });
@@ -33,40 +32,28 @@ const UsersPage = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const email = `${formData.institution_number}@internal.local`;
-    
-    // Create auth user via edge function or direct signup
-    // Since signup is disabled for public, we use admin API via edge function
-    // For now, we'll use a workaround: temporarily use supabase.auth.signUp
-    // In production, this would be an admin edge function
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password: formData.password,
+    setCreating(true);
+
+    const { data, error } = await supabase.functions.invoke('create-user', {
+      body: {
+        institution_number: formData.institution_number,
+        password: formData.password,
+        full_name: formData.full_name,
+        role: formData.role,
+      },
     });
-    
-    if (authError) {
-      toast({ title: t.error_message as string, description: authError.message, variant: 'destructive' });
+
+    setCreating(false);
+
+    if (error || data?.error) {
+      toast({ title: t.error_message as string, description: data?.error || error?.message || 'Failed to create user', variant: 'destructive' });
       return;
     }
 
-    if (authData.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: authData.user.id,
-        full_name: formData.full_name,
-        institution_number: formData.institution_number,
-        role: formData.role as any,
-        email,
-      });
-
-      if (profileError) {
-        toast({ title: t.error_message as string, description: profileError.message, variant: 'destructive' });
-      } else {
-        toast({ title: t.success_message as string });
-        setShowCreate(false);
-        setFormData({ full_name: '', institution_number: '', role: 'user', password: '' });
-        fetchUsers();
-      }
-    }
+    toast({ title: t.success_message as string });
+    setShowCreate(false);
+    setFormData({ full_name: '', institution_number: '', role: 'user', password: '' });
+    fetchUsers();
   };
 
   const filtered = users.filter(u =>
@@ -97,7 +84,9 @@ const UsersPage = () => {
                     <SelectContent>{roles.map(r => <SelectItem key={r} value={r}>{(t as any)[`role_${r}`]}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full">{t.create as string}</Button>
+                <Button type="submit" className="w-full" disabled={creating}>
+                  {creating ? (t.loading as string) : (t.create as string)}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -125,6 +114,7 @@ const UsersPage = () => {
               </CardContent>
             </Card>
           ))}
+          {filtered.length === 0 && <p className="text-muted-foreground text-center py-8">No users found</p>}
         </div>
       </div>
     </AppLayout>
