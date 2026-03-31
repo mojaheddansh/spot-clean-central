@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { RoleBadge } from '@/components/StatusBadges';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const UsersPage = () => {
@@ -18,9 +19,14 @@ const UsersPage = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '', institution_number: '', role: 'user', password: '',
+  });
+  const [editData, setEditData] = useState({
+    user_id: '', full_name: '', institution_number: '', role: 'user', is_active: true, password: '',
   });
 
   const fetchUsers = async () => {
@@ -33,26 +39,42 @@ const UsersPage = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
-
     const { data, error } = await supabase.functions.invoke('create-user', {
-      body: {
-        institution_number: formData.institution_number,
-        password: formData.password,
-        full_name: formData.full_name,
-        role: formData.role,
-      },
+      body: { action: 'create', ...formData },
     });
-
     setCreating(false);
-
     if (error || data?.error) {
-      toast({ title: t.error_message as string, description: data?.error || error?.message || 'Failed to create user', variant: 'destructive' });
+      toast({ title: t.error_message as string, description: data?.error || error?.message, variant: 'destructive' });
       return;
     }
-
     toast({ title: t.success_message as string });
     setShowCreate(false);
     setFormData({ full_name: '', institution_number: '', role: 'user', password: '' });
+    fetchUsers();
+  };
+
+  const openEdit = (user: any) => {
+    setEditData({
+      user_id: user.id, full_name: user.full_name,
+      institution_number: user.institution_number, role: user.role,
+      is_active: user.is_active, password: '',
+    });
+    setShowEdit(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    const body: any = { action: 'update', user_id: editData.user_id, full_name: editData.full_name, institution_number: editData.institution_number, role: editData.role, is_active: editData.is_active };
+    if (editData.password) body.password = editData.password;
+    const { data, error } = await supabase.functions.invoke('create-user', { body });
+    setSaving(false);
+    if (error || data?.error) {
+      toast({ title: t.error_message as string, description: data?.error || error?.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: t.success_message as string });
+    setShowEdit(false);
     fetchUsers();
   };
 
@@ -97,6 +119,31 @@ const UsersPage = () => {
           <Input className="pl-9" placeholder={t.search as string} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
 
+        {/* Edit dialog */}
+        <Dialog open={showEdit} onOpenChange={setShowEdit}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>{t.user_edit as string}</DialogTitle></DialogHeader>
+            <form onSubmit={handleEdit} className="space-y-3">
+              <div><Label>{t.full_name as string}</Label><Input value={editData.full_name} onChange={e => setEditData({...editData, full_name: e.target.value})} required /></div>
+              <div><Label>{t.institution_number as string}</Label><Input value={editData.institution_number} onChange={e => setEditData({...editData, institution_number: e.target.value})} required /></div>
+              <div><Label>{t.password as string} (leave empty to keep)</Label><Input type="password" value={editData.password} onChange={e => setEditData({...editData, password: e.target.value})} minLength={6} placeholder="••••••" /></div>
+              <div><Label>{t.user_role as string}</Label>
+                <Select value={editData.role} onValueChange={v => setEditData({...editData, role: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{roles.map(r => <SelectItem key={r} value={r}>{(t as any)[`role_${r}`]}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label>{t.active as string}</Label>
+                <Switch checked={editData.is_active} onCheckedChange={v => setEditData({...editData, is_active: v})} />
+              </div>
+              <Button type="submit" className="w-full" disabled={saving}>
+                {saving ? (t.loading as string) : (t.save as string)}
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+
         <div className="space-y-2">
           {filtered.map(user => (
             <Card key={user.id}>
@@ -110,6 +157,9 @@ const UsersPage = () => {
                   <span className={`text-xs ${user.is_active ? 'text-success' : 'text-destructive'}`}>
                     {user.is_active ? (t.active as string) : (t.inactive as string)}
                   </span>
+                  <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>

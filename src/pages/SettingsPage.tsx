@@ -174,6 +174,20 @@ const SettingsPage = () => {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
+                <Label>Show Today's Schedule on QR Page</Label>
+                <p className="text-xs text-muted-foreground">Display today's lessons on QR landing page</p>
+              </div>
+              <Switch checked={form.show_today_schedule_on_qr_page} onCheckedChange={v => update('show_today_schedule_on_qr_page', v)} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Show Weekly Schedule on QR Page</Label>
+                <p className="text-xs text-muted-foreground">Display full weekly schedule on QR landing page</p>
+              </div>
+              <Switch checked={form.show_weekly_schedule_on_qr_page} onCheckedChange={v => update('show_weekly_schedule_on_qr_page', v)} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
                 <Label>Show Last Cleaning Time on QR Page</Label>
                 <p className="text-xs text-muted-foreground">Display when the room was last cleaned</p>
               </div>
