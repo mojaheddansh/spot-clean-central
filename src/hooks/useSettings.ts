@@ -12,6 +12,8 @@ export interface SystemSettings {
   enable_anonymous_complaints: boolean;
   enable_email_notifications: boolean;
   show_last_cleaning_time_on_qr_page: boolean;
+  show_today_schedule_on_qr_page: boolean;
+  show_weekly_schedule_on_qr_page: boolean;
   allow_room_deletion: boolean;
   contact_email: string;
   maintenance_mode: boolean;
@@ -27,6 +29,8 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   enable_anonymous_complaints: true,
   enable_email_notifications: false,
   show_last_cleaning_time_on_qr_page: true,
+  show_today_schedule_on_qr_page: true,
+  show_weekly_schedule_on_qr_page: true,
   allow_room_deletion: false,
   contact_email: '',
   maintenance_mode: false,
@@ -47,7 +51,6 @@ export function useSettings() {
         data.forEach((row: { key: string; value: Json }) => {
           const key = row.key as keyof SystemSettings;
           if (key in merged) {
-            // Extract the actual value - stored as JSON
             (merged as any)[key] = row.value;
           }
         });
