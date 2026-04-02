@@ -46,7 +46,7 @@ const LoginPage = () => {
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Building2 className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-xl">{t.login_title as string}</CardTitle>
+          <CardTitle className="text-xl">{settings.site_name || (t.login_title as string)}</CardTitle>
           <CardDescription>{t.login_subtitle as string}</CardDescription>
         </CardHeader>
         <CardContent>
