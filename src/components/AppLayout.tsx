@@ -54,7 +54,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
             <Link to="/dashboard" className="font-bold text-lg text-primary">
-              {t.app_name as string}
+              {settings.site_name || (t.app_name as string)}
             </Link>
           </div>
           <div className="flex items-center gap-2">
