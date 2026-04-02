@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { AppLayout } from '@/components/AppLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { RoomTypeBadge } from '@/components/StatusBadges';
 import { Link } from 'react-router-dom';
 
@@ -13,21 +13,35 @@ const CleaningPage = () => {
   const [rooms, setRooms] = useState<any[]>([]);
   const [records, setRecords] = useState<any[]>([]);
 
-  useEffect(() => {
-    const fetch = async () => {
-      if (profile?.role === 'cleaner') {
-        const { data } = await supabase.from('rooms').select('*').eq('cleaner_id', user!.id).eq('is_active', true);
-        setRooms(data || []);
-      } else {
-        const { data } = await supabase.from('rooms').select('*').eq('is_active', true);
-        setRooms(data || []);
-      }
+  const fetchData = useCallback(async () => {
+    if (!user || !profile) return;
+    if (profile.role === 'cleaner') {
+      const { data } = await supabase.from('rooms').select('*').eq('cleaner_id', user.id).eq('is_active', true);
+      setRooms(data || []);
+    } else {
+      const { data } = await supabase.from('rooms').select('*').eq('is_active', true);
+      setRooms(data || []);
+    }
 
-      const { data: recs } = await supabase.from('cleaning_records').select('*, rooms(room_name, room_number), cleaner:profiles!cleaning_records_cleaner_id_fkey(full_name)').order('cleaned_at', { ascending: false }).limit(20);
-      setRecords(recs || []);
-    };
-    fetch();
+    const { data: recs } = await supabase
+      .from('cleaning_records')
+      .select('*, rooms(room_name, room_number), cleaner:profiles!cleaning_records_cleaner_id_fkey(full_name)')
+      .order('cleaned_at', { ascending: false }).limit(20);
+    setRecords(recs || []);
   }, [user, profile]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Realtime subscription for rooms and cleaning_records
+  useEffect(() => {
+    const channel = supabase
+      .channel('cleaning-page')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cleaning_records' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'complaints' }, () => fetchData())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchData]);
 
   return (
     <AppLayout>
@@ -57,6 +71,7 @@ const CleaningPage = () => {
                 </Card>
               </Link>
             ))}
+            {rooms.length === 0 && <p className="text-muted-foreground col-span-full">No assigned rooms</p>}
           </div>
         </div>
 
@@ -82,6 +97,7 @@ const CleaningPage = () => {
                 </CardContent>
               </Card>
             ))}
+            {records.length === 0 && <p className="text-muted-foreground">No cleaning records yet</p>}
           </div>
         </div>
       </div>
