@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -36,16 +36,25 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   maintenance_mode: false,
 };
 
-export function useSettings() {
+interface SettingsContextType {
+  settings: SystemSettings;
+  loading: boolean;
+  refetch: () => Promise<void>;
+}
+
+const SettingsContext = createContext<SettingsContextType>({
+  settings: DEFAULT_SETTINGS,
+  loading: true,
+  refetch: async () => {},
+});
+
+export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<SystemSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
 
   const fetchSettings = useCallback(async () => {
     try {
-      const { data } = await supabase
-        .from('system_settings')
-        .select('key, value');
-      
+      const { data } = await supabase.from('system_settings').select('key, value');
       if (data && data.length > 0) {
         const merged = { ...DEFAULT_SETTINGS };
         data.forEach((row: { key: string; value: Json }) => {
@@ -67,8 +76,14 @@ export function useSettings() {
     fetchSettings();
   }, [fetchSettings]);
 
-  return { settings, loading, refetch: fetchSettings };
-}
+  return (
+    <SettingsContext.Provider value={{ settings, loading, refetch: fetchSettings }}>
+      {children}
+    </SettingsContext.Provider>
+  );
+};
+
+export const useSettings = () => useContext(SettingsContext);
 
 export async function saveSettings(settings: SystemSettings): Promise<{ error: string | null }> {
   try {

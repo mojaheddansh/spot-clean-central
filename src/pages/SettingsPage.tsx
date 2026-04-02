@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useSettings, saveSettings, DEFAULT_SETTINGS, type SystemSettings } from '@/contexts/SettingsContext';
 import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,13 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useSettings, saveSettings, DEFAULT_SETTINGS, type SystemSettings } from '@/hooks/useSettings';
 import { Settings, Globe, Shield, Bell, MessageSquare, Loader2, Save } from 'lucide-react';
 
 const SettingsPage = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { settings: loadedSettings, loading } = useSettings();
+  const { settings: loadedSettings, loading, refetch } = useSettings();
   const [form, setForm] = useState<SystemSettings>(DEFAULT_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -39,6 +39,7 @@ const SettingsPage = () => {
       toast({ title: t.error_message as string, description: error, variant: 'destructive' });
     } else {
       toast({ title: t.success_message as string });
+      await refetch();
     }
   };
 
@@ -108,14 +109,13 @@ const SettingsPage = () => {
           </CardContent>
         </Card>
 
-        {/* Localization Settings */}
+        {/* Localization */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4 text-primary" />
               <CardTitle className="text-base">Localization</CardTitle>
             </div>
-            <CardDescription>Language and regional preferences</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -131,14 +131,13 @@ const SettingsPage = () => {
           </CardContent>
         </Card>
 
-        {/* Complaint Settings */}
+        {/* Complaints */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-primary" />
               <CardTitle className="text-base">Complaints</CardTitle>
             </div>
-            <CardDescription>Complaint system configuration</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -162,57 +161,43 @@ const SettingsPage = () => {
           </CardContent>
         </Card>
 
-        {/* QR Page Settings */}
+        {/* QR Page */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-primary" />
               <CardTitle className="text-base">QR Page & Rooms</CardTitle>
             </div>
-            <CardDescription>QR landing page display options</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <div>
-                <Label>Show Today's Schedule on QR Page</Label>
-                <p className="text-xs text-muted-foreground">Display today's lessons on QR landing page</p>
-              </div>
+              <div><Label>Show Today's Schedule on QR Page</Label></div>
               <Switch checked={form.show_today_schedule_on_qr_page} onCheckedChange={v => update('show_today_schedule_on_qr_page', v)} />
             </div>
             <div className="flex items-center justify-between">
-              <div>
-                <Label>Show Weekly Schedule on QR Page</Label>
-                <p className="text-xs text-muted-foreground">Display full weekly schedule on QR landing page</p>
-              </div>
+              <div><Label>Show Weekly Schedule on QR Page</Label></div>
               <Switch checked={form.show_weekly_schedule_on_qr_page} onCheckedChange={v => update('show_weekly_schedule_on_qr_page', v)} />
             </div>
             <div className="flex items-center justify-between">
-              <div>
-                <Label>Show Last Cleaning Time on QR Page</Label>
-                <p className="text-xs text-muted-foreground">Display when the room was last cleaned</p>
-              </div>
+              <div><Label>Show Last Cleaning Time on QR Page</Label></div>
               <Switch checked={form.show_last_cleaning_time_on_qr_page} onCheckedChange={v => update('show_last_cleaning_time_on_qr_page', v)} />
             </div>
             <div className="flex items-center justify-between">
-              <div>
-                <Label>Allow Room Deletion</Label>
-                <p className="text-xs text-muted-foreground">Allow admins to permanently delete rooms</p>
-              </div>
+              <div><Label>Allow Room Deletion</Label></div>
               <Switch checked={form.allow_room_deletion} onCheckedChange={v => update('allow_room_deletion', v)} />
             </div>
           </CardContent>
         </Card>
 
-        {/* Notification Settings */}
+        {/* Notifications */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4 text-primary" />
               <CardTitle className="text-base">Notifications</CardTitle>
             </div>
-            <CardDescription>Notification preferences</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <Label>Enable Email Notifications</Label>
@@ -223,7 +208,6 @@ const SettingsPage = () => {
           </CardContent>
         </Card>
 
-        {/* Bottom save button for mobile */}
         <div className="pb-4">
           <Button onClick={handleSave} disabled={saving} className="w-full gap-2" size="lg">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}

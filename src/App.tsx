@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 import LoginPage from "./pages/LoginPage";
 import QRLandingPage from "./pages/QRLandingPage";
 import AnonymousComplaintPage from "./pages/AnonymousComplaintPage";
@@ -35,6 +36,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
       <AuthProvider>
+        <SettingsProvider>
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
@@ -59,6 +61,7 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
+        </SettingsProvider>
       </AuthProvider>
     </LanguageProvider>
   </QueryClientProvider>
