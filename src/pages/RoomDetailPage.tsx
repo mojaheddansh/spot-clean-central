@@ -16,6 +16,7 @@ import { StatusBadge, PriorityBadge, RoomTypeBadge } from '@/components/StatusBa
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Clock, Pencil, Trash2, Plus, CalendarDays } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ScheduleCSVImport } from '@/components/ScheduleCSVImport';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const roomTypes = ['classroom', 'office', 'meeting_room', 'laboratory', 'toilet_wc', 'corridor'];
