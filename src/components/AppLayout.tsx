@@ -21,6 +21,7 @@ interface NavItem {
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { profile, signOut } = useAuth();
   const { t } = useLanguage();
+  const { settings } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
