@@ -12,6 +12,7 @@ import { Building2 } from 'lucide-react';
 
 const LoginPage = () => {
   const { signIn } = useAuth();
+  const { settings } = useSettings();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
