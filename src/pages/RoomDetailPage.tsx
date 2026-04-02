@@ -299,6 +299,7 @@ const RoomDetailPage = () => {
               );
             })}
             {schedules.length === 0 && <p className="text-muted-foreground text-sm py-4">No schedule entries yet</p>}
+            {canEdit && <ScheduleCSVImport roomId={id!} onImported={fetchAll} />}
           </TabsContent>
 
           {/* Schedule dialog */}
