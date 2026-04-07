@@ -1,21 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage } from '@/i18n/LanguageContext';
 import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { QrCode, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 const QRManagementPage = () => {
-  const { t } = useLanguage();
   const [rooms, setRooms] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from('rooms').select('*').eq('is_active', true).order('building').order('room_number');
-      setRooms(data || []);
-    };
-    fetch();
+    supabase.from('rooms').select('*').eq('is_active', true).order('building').order('room_number').then(({ data }) => setRooms(data || []));
   }, []);
 
   const getQRUrl = (token: string) => {
@@ -25,7 +19,7 @@ const QRManagementPage = () => {
   return (
     <AppLayout>
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">{t.nav_qr as string}</h1>
+        <h1 className="text-2xl font-bold">QR Kodları</h1>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {rooms.map(room => (
             <Card key={room.id}>
@@ -38,7 +32,7 @@ const QRManagementPage = () => {
                 <code className="text-xs bg-muted px-2 py-1 rounded break-all">/qr/{room.qr_token}</code>
                 <a href={getQRUrl(room.qr_token)} download={`qr-${room.room_number}.png`} target="_blank">
                   <Button size="sm" variant="outline" className="gap-1">
-                    <Download className="h-3 w-3" />{t.qr_download as string}
+                    <Download className="h-3 w-3" />QR İndir
                   </Button>
                 </a>
               </CardContent>

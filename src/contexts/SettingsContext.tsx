@@ -21,9 +21,9 @@ export interface SystemSettings {
 
 export const DEFAULT_SETTINGS: SystemSettings = {
   site_name: 'CampusClean',
-  site_description: 'University Cleaning & Complaint Management System',
-  default_language: 'en',
-  supported_languages: ['en', 'tr'],
+  site_description: 'Üniversite Temizlik ve Şikâyet Yönetim Sistemi',
+  default_language: 'tr',
+  supported_languages: ['tr'],
   timezone: 'Europe/Istanbul',
   complaint_default_priority: 'medium',
   enable_anonymous_complaints: true,
@@ -43,9 +43,7 @@ interface SettingsContextType {
 }
 
 const SettingsContext = createContext<SettingsContextType>({
-  settings: DEFAULT_SETTINGS,
-  loading: true,
-  refetch: async () => {},
+  settings: DEFAULT_SETTINGS, loading: true, refetch: async () => {},
 });
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -59,22 +57,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const merged = { ...DEFAULT_SETTINGS };
         data.forEach((row: { key: string; value: Json }) => {
           const key = row.key as keyof SystemSettings;
-          if (key in merged) {
-            (merged as any)[key] = row.value;
-          }
+          if (key in merged) { (merged as any)[key] = row.value; }
         });
         setSettings(merged);
       }
-    } catch {
-      // Use defaults on error
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* Use defaults */ } finally { setLoading(false); }
   }, []);
 
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
+  useEffect(() => { fetchSettings(); }, [fetchSettings]);
 
   return (
     <SettingsContext.Provider value={{ settings, loading, refetch: fetchSettings }}>
@@ -89,16 +79,12 @@ export async function saveSettings(settings: SystemSettings): Promise<{ error: s
   try {
     const entries = Object.entries(settings);
     for (const [key, value] of entries) {
-      const { error } = await supabase
-        .from('system_settings')
-        .upsert(
-          { key, value: value as Json, updated_at: new Date().toISOString() },
-          { onConflict: 'key' }
-        );
+      const { error } = await supabase.from('system_settings').upsert(
+        { key, value: value as Json, updated_at: new Date().toISOString() },
+        { onConflict: 'key' }
+      );
       if (error) return { error: error.message };
     }
     return { error: null };
-  } catch (e: any) {
-    return { error: e.message || 'Unknown error' };
-  }
+  } catch (e: any) { return { error: e.message || 'Bilinmeyen hata' }; }
 }

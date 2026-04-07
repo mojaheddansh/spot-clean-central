@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { LanguageProvider } from "@/i18n/LanguageContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import LoginPage from "./pages/LoginPage";
@@ -26,7 +25,7 @@ const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
   const { user, profile, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>;
   if (!user) return <Navigate to="/login" replace />;
   if (roles && profile && !roles.includes(profile.role)) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
@@ -34,9 +33,8 @@ const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <AuthProvider>
-        <SettingsProvider>
+    <AuthProvider>
+      <SettingsProvider>
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
@@ -61,9 +59,8 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-        </SettingsProvider>
-      </AuthProvider>
-    </LanguageProvider>
+      </SettingsProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

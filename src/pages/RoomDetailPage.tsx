@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,12 +17,15 @@ import { Building2, Clock, Pencil, Trash2, Plus, CalendarDays } from 'lucide-rea
 import { useToast } from '@/hooks/use-toast';
 import { ScheduleCSVImport } from '@/components/ScheduleCSVImport';
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const roomTypes = ['classroom', 'office', 'meeting_room', 'laboratory', 'toilet_wc', 'corridor'];
+const DAYS_TR = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+const ROOM_TYPE_LABELS: Record<string, string> = {
+  classroom: 'Derslik', office: 'Ofis', meeting_room: 'Toplantı Odası',
+  laboratory: 'Laboratuvar', toilet_wc: 'Tuvalet / WC', corridor: 'Koridor',
+};
+const roomTypes = Object.keys(ROOM_TYPE_LABELS);
 
 const RoomDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { t } = useLanguage();
   const { profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -35,14 +37,12 @@ const RoomDetailPage = () => {
   const [cleaners, setCleaners] = useState<any[]>([]);
   const [schedules, setSchedules] = useState<any[]>([]);
 
-  // Edit room
   const [showEditRoom, setShowEditRoom] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [saving, setSaving] = useState(false);
 
-  // Schedule CRUD
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
-  const [scheduleForm, setScheduleForm] = useState<any>({ subject_name: '', day_of_week: 1, start_time: '09:00', end_time: '10:00', instructor_name: '', note: '', semester: 'Spring 2026', is_active: true });
+  const [scheduleForm, setScheduleForm] = useState<any>({ subject_name: '', day_of_week: 1, start_time: '09:00', end_time: '10:00', instructor_name: '', note: '', semester: 'Bahar 2026', is_active: true });
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
 
   const isAdmin = profile?.role === 'admin';
@@ -85,15 +85,13 @@ const RoomDetailPage = () => {
     e.preventDefault();
     setSaving(true);
     const { error } = await supabase.from('rooms').update({
-      ...editForm,
-      manager_id: editForm.manager_id || null,
-      cleaner_id: editForm.cleaner_id || null,
+      ...editForm, manager_id: editForm.manager_id || null, cleaner_id: editForm.cleaner_id || null,
     }).eq('id', id);
     setSaving(false);
     if (error) {
-      toast({ title: t.error_message as string, description: error.message, variant: 'destructive' });
+      toast({ title: 'Hata', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: t.success_message as string });
+      toast({ title: 'Oda başarıyla güncellendi' });
       setShowEditRoom(false);
       fetchAll();
     }
@@ -102,17 +100,16 @@ const RoomDetailPage = () => {
   const handleDeleteRoom = async () => {
     const { error } = await supabase.from('rooms').update({ is_active: false }).eq('id', id);
     if (error) {
-      toast({ title: t.error_message as string, description: error.message, variant: 'destructive' });
+      toast({ title: 'Hata', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: t.success_message as string });
+      toast({ title: 'Oda devre dışı bırakıldı' });
       navigate('/rooms');
     }
   };
 
-  // Schedule handlers
   const openAddSchedule = () => {
     setEditingScheduleId(null);
-    setScheduleForm({ subject_name: '', day_of_week: 1, start_time: '09:00', end_time: '10:00', instructor_name: '', note: '', semester: 'Spring 2026', is_active: true });
+    setScheduleForm({ subject_name: '', day_of_week: 1, start_time: '09:00', end_time: '10:00', instructor_name: '', note: '', semester: 'Bahar 2026', is_active: true });
     setShowScheduleDialog(true);
   };
 
@@ -132,9 +129,9 @@ const RoomDetailPage = () => {
       ({ error } = await supabase.from('class_schedules').insert(payload));
     }
     if (error) {
-      toast({ title: t.error_message as string, description: error.message, variant: 'destructive' });
+      toast({ title: 'Hata', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: t.success_message as string });
+      toast({ title: 'Ders programı kaydedildi' });
       setShowScheduleDialog(false);
       fetchAll();
     }
@@ -143,13 +140,13 @@ const RoomDetailPage = () => {
   const handleDeleteSchedule = async (scheduleId: string) => {
     const { error } = await supabase.from('class_schedules').delete().eq('id', scheduleId);
     if (error) {
-      toast({ title: t.error_message as string, description: error.message, variant: 'destructive' });
+      toast({ title: 'Hata', description: error.message, variant: 'destructive' });
     } else {
       fetchAll();
     }
   };
 
-  if (!room) return <AppLayout><p>{t.loading as string}</p></AppLayout>;
+  if (!room) return <AppLayout><p>Yükleniyor...</p></AppLayout>;
 
   const openComplaints = complaints.filter(c => ['new', 'in_review'].includes(c.status));
 
@@ -161,26 +158,26 @@ const RoomDetailPage = () => {
             <Building2 className="h-6 w-6 text-primary" />
             <div>
               <h1 className="text-2xl font-bold">{room.room_name}</h1>
-              <p className="text-muted-foreground">{room.room_number} · {room.building} · {t.floor as string} {room.floor}</p>
+              <p className="text-muted-foreground">{room.room_number} · {room.building} · Kat {room.floor}</p>
             </div>
             <RoomTypeBadge type={room.room_type} />
           </div>
           {canEdit && (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={openEditRoom} className="gap-1"><Pencil className="h-4 w-4" />{t.edit as string}</Button>
+              <Button variant="outline" size="sm" onClick={openEditRoom} className="gap-1"><Pencil className="h-4 w-4" />Düzenle</Button>
               {isAdmin && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" className="gap-1"><Trash2 className="h-4 w-4" />{t.delete as string}</Button>
+                    <Button variant="destructive" size="sm" className="gap-1"><Trash2 className="h-4 w-4" />Sil</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete room?</AlertDialogTitle>
-                      <AlertDialogDescription>This will deactivate the room. It can be restored later.</AlertDialogDescription>
+                      <AlertDialogTitle>Odayı silmek istediğinize emin misiniz?</AlertDialogTitle>
+                      <AlertDialogDescription>Bu işlem odayı devre dışı bırakır. Daha sonra geri alınabilir.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>{t.cancel as string}</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteRoom}>{t.delete as string}</AlertDialogAction>
+                      <AlertDialogCancel>İptal</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteRoom}>Sil</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -189,81 +186,79 @@ const RoomDetailPage = () => {
           )}
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card><CardContent className="p-3 text-center"><p className="text-2xl font-bold text-warning">{openComplaints.length}</p><p className="text-xs text-muted-foreground">{t.open_complaints as string}</p></CardContent></Card>
-          <Card><CardContent className="p-3 text-center"><p className="text-2xl font-bold">{complaints.length}</p><p className="text-xs text-muted-foreground">{t.total as string} {t.complaints as string}</p></CardContent></Card>
-          <Card><CardContent className="p-3 text-center"><p className="text-2xl font-bold text-success">{cleaningRecords.length}</p><p className="text-xs text-muted-foreground">{t.cleaning_record as string}</p></CardContent></Card>
-          <Card><CardContent className="p-3 text-center"><p className="text-xs text-muted-foreground">{t.room_last_cleaned as string}</p><p className="text-sm font-medium">{room.last_cleaned_at ? new Date(room.last_cleaned_at).toLocaleString() : '-'}</p></CardContent></Card>
+          <Card><CardContent className="p-3 text-center"><p className="text-2xl font-bold text-warning">{openComplaints.length}</p><p className="text-xs text-muted-foreground">Açık Şikâyetler</p></CardContent></Card>
+          <Card><CardContent className="p-3 text-center"><p className="text-2xl font-bold">{complaints.length}</p><p className="text-xs text-muted-foreground">Toplam Şikâyet</p></CardContent></Card>
+          <Card><CardContent className="p-3 text-center"><p className="text-2xl font-bold text-success">{cleaningRecords.length}</p><p className="text-xs text-muted-foreground">Temizlik Kaydı</p></CardContent></Card>
+          <Card><CardContent className="p-3 text-center"><p className="text-xs text-muted-foreground">Son Temizlik</p><p className="text-sm font-medium">{room.last_cleaned_at ? new Date(room.last_cleaned_at).toLocaleString('tr-TR') : '-'}</p></CardContent></Card>
         </div>
 
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-muted-foreground">{t.room_manager as string}:</span> {room.manager?.full_name || '-'}</div>
-          <div><span className="text-muted-foreground">{t.room_cleaner as string}:</span> {room.cleaner?.full_name || '-'}</div>
-          <div><span className="text-muted-foreground">{t.room_qr_code as string}:</span> <code className="text-xs bg-muted px-1 py-0.5 rounded">{room.qr_token}</code></div>
+          <div><span className="text-muted-foreground">Yönetici:</span> {room.manager?.full_name || '-'}</div>
+          <div><span className="text-muted-foreground">Temizlik Personeli:</span> {room.cleaner?.full_name || '-'}</div>
+          <div><span className="text-muted-foreground">QR Kodu:</span> <code className="text-xs bg-muted px-1 py-0.5 rounded">{room.qr_token}</code></div>
         </div>
 
-        {/* Edit Room Dialog */}
+        {/* Oda Düzenle */}
         <Dialog open={showEditRoom} onOpenChange={setShowEditRoom}>
           <DialogContent>
-            <DialogHeader><DialogTitle>{t.room_edit as string}</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Oda Düzenle</DialogTitle></DialogHeader>
             <form onSubmit={handleSaveRoom} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>{t.building as string}</Label><Input value={editForm.building || ''} onChange={e => setEditForm({...editForm, building: e.target.value})} required /></div>
-                <div><Label>{t.floor as string}</Label><Input value={editForm.floor || ''} onChange={e => setEditForm({...editForm, floor: e.target.value})} required /></div>
+                <div><Label>Bina</Label><Input value={editForm.building || ''} onChange={e => setEditForm({...editForm, building: e.target.value})} required /></div>
+                <div><Label>Kat</Label><Input value={editForm.floor || ''} onChange={e => setEditForm({...editForm, floor: e.target.value})} required /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>{t.room_number as string}</Label><Input value={editForm.room_number || ''} onChange={e => setEditForm({...editForm, room_number: e.target.value})} required /></div>
-                <div><Label>{t.room_name as string}</Label><Input value={editForm.room_name || ''} onChange={e => setEditForm({...editForm, room_name: e.target.value})} required /></div>
+                <div><Label>Oda Numarası</Label><Input value={editForm.room_number || ''} onChange={e => setEditForm({...editForm, room_number: e.target.value})} required /></div>
+                <div><Label>Oda Adı</Label><Input value={editForm.room_name || ''} onChange={e => setEditForm({...editForm, room_name: e.target.value})} required /></div>
               </div>
-              <div><Label>{t.room_type as string}</Label>
+              <div><Label>Oda Türü</Label>
                 <Select value={editForm.room_type} onValueChange={v => setEditForm({...editForm, room_type: v})}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{roomTypes.map(rt => <SelectItem key={rt} value={rt}>{(t as any)[`room_${rt}`] || rt}</SelectItem>)}</SelectContent>
+                  <SelectContent>{roomTypes.map(rt => <SelectItem key={rt} value={rt}>{ROOM_TYPE_LABELS[rt]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div><Label>{t.room_manager as string}</Label>
+              <div><Label>Sorumlu Yönetici</Label>
                 <Select value={editForm.manager_id} onValueChange={v => setEditForm({...editForm, manager_id: v})}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">— None —</SelectItem>
+                    <SelectItem value="none">— Yok —</SelectItem>
                     {managers.map(m => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              <div><Label>{t.room_cleaner as string}</Label>
+              <div><Label>Temizlik Personeli</Label>
                 <Select value={editForm.cleaner_id} onValueChange={v => setEditForm({...editForm, cleaner_id: v})}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">— None —</SelectItem>
+                    <SelectItem value="none">— Yok —</SelectItem>
                     {cleaners.map(c => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex items-center justify-between">
-                <Label>{t.active as string}</Label>
+                <Label>Aktif</Label>
                 <Switch checked={editForm.is_active} onCheckedChange={v => setEditForm({...editForm, is_active: v})} />
               </div>
-              <Button type="submit" className="w-full" disabled={saving}>{saving ? (t.loading as string) : (t.save as string)}</Button>
+              <Button type="submit" className="w-full" disabled={saving}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</Button>
             </form>
           </DialogContent>
         </Dialog>
 
-        {/* Tabs */}
+        {/* Sekmeler */}
         <Tabs defaultValue="schedule">
           <TabsList>
-            <TabsTrigger value="schedule"><CalendarDays className="h-4 w-4 mr-1" />Schedule</TabsTrigger>
-            <TabsTrigger value="timeline">{t.timeline as string}</TabsTrigger>
-            <TabsTrigger value="complaints">{t.complaints as string}</TabsTrigger>
-            <TabsTrigger value="cleaning">{t.cleaning_record as string}</TabsTrigger>
+            <TabsTrigger value="schedule"><CalendarDays className="h-4 w-4 mr-1" />Ders Programı</TabsTrigger>
+            <TabsTrigger value="timeline">Zaman Çizelgesi</TabsTrigger>
+            <TabsTrigger value="complaints">Şikâyetler</TabsTrigger>
+            <TabsTrigger value="cleaning">Temizlik Kayıtları</TabsTrigger>
           </TabsList>
 
-          {/* Schedule tab */}
           <TabsContent value="schedule" className="space-y-3">
             {canEdit && (
-              <Button size="sm" onClick={openAddSchedule} className="gap-1"><Plus className="h-4 w-4" />Add Lesson</Button>
+              <Button size="sm" onClick={openAddSchedule} className="gap-1"><Plus className="h-4 w-4" />Ders Ekle</Button>
             )}
-            {DAYS.map((dayName, dayIdx) => {
+            {DAYS_TR.map((dayName, dayIdx) => {
               const daySchedules = schedules.filter(s => s.day_of_week === dayIdx);
               if (daySchedules.length === 0) return null;
               return (
@@ -283,10 +278,10 @@ const RoomDetailPage = () => {
                             <AlertDialog>
                               <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive"><Trash2 className="h-3 w-3" /></Button></AlertDialogTrigger>
                               <AlertDialogContent>
-                                <AlertDialogHeader><AlertDialogTitle>Delete this lesson?</AlertDialogTitle></AlertDialogHeader>
+                                <AlertDialogHeader><AlertDialogTitle>Bu dersi silmek istediğinize emin misiniz?</AlertDialogTitle></AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>{t.cancel as string}</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDeleteSchedule(s.id)}>{t.delete as string}</AlertDialogAction>
+                                  <AlertDialogCancel>İptal</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteSchedule(s.id)}>Sil</AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
@@ -298,30 +293,29 @@ const RoomDetailPage = () => {
                 </div>
               );
             })}
-            {schedules.length === 0 && <p className="text-muted-foreground text-sm py-4">No schedule entries yet</p>}
+            {schedules.length === 0 && <p className="text-muted-foreground text-sm py-4">Henüz ders programı girişi yok</p>}
             {canEdit && <ScheduleCSVImport roomId={id!} onImported={fetchAll} />}
           </TabsContent>
 
-          {/* Schedule dialog */}
           <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
             <DialogContent>
-              <DialogHeader><DialogTitle>{editingScheduleId ? 'Edit Lesson' : 'Add Lesson'}</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editingScheduleId ? 'Ders Düzenle' : 'Ders Ekle'}</DialogTitle></DialogHeader>
               <form onSubmit={handleSaveSchedule} className="space-y-3">
-                <div><Label>Subject Name</Label><Input value={scheduleForm.subject_name} onChange={e => setScheduleForm({...scheduleForm, subject_name: e.target.value})} required /></div>
-                <div><Label>Day of Week</Label>
+                <div><Label>Ders Adı</Label><Input value={scheduleForm.subject_name} onChange={e => setScheduleForm({...scheduleForm, subject_name: e.target.value})} required /></div>
+                <div><Label>Gün</Label>
                   <Select value={String(scheduleForm.day_of_week)} onValueChange={v => setScheduleForm({...scheduleForm, day_of_week: Number(v)})}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{DAYS.map((d, i) => <SelectItem key={i} value={String(i)}>{d}</SelectItem>)}</SelectContent>
+                    <SelectContent>{DAYS_TR.map((d, i) => <SelectItem key={i} value={String(i)}>{d}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Start Time</Label><Input type="time" value={scheduleForm.start_time} onChange={e => setScheduleForm({...scheduleForm, start_time: e.target.value})} required /></div>
-                  <div><Label>End Time</Label><Input type="time" value={scheduleForm.end_time} onChange={e => setScheduleForm({...scheduleForm, end_time: e.target.value})} required /></div>
+                  <div><Label>Başlangıç</Label><Input type="time" value={scheduleForm.start_time} onChange={e => setScheduleForm({...scheduleForm, start_time: e.target.value})} required /></div>
+                  <div><Label>Bitiş</Label><Input type="time" value={scheduleForm.end_time} onChange={e => setScheduleForm({...scheduleForm, end_time: e.target.value})} required /></div>
                 </div>
-                <div><Label>Instructor (optional)</Label><Input value={scheduleForm.instructor_name} onChange={e => setScheduleForm({...scheduleForm, instructor_name: e.target.value})} /></div>
-                <div><Label>Semester</Label><Input value={scheduleForm.semester} onChange={e => setScheduleForm({...scheduleForm, semester: e.target.value})} /></div>
-                <div><Label>Note (optional)</Label><Input value={scheduleForm.note} onChange={e => setScheduleForm({...scheduleForm, note: e.target.value})} /></div>
-                <Button type="submit" className="w-full">{t.save as string}</Button>
+                <div><Label>Öğretim Görevlisi (isteğe bağlı)</Label><Input value={scheduleForm.instructor_name} onChange={e => setScheduleForm({...scheduleForm, instructor_name: e.target.value})} /></div>
+                <div><Label>Dönem</Label><Input value={scheduleForm.semester} onChange={e => setScheduleForm({...scheduleForm, semester: e.target.value})} /></div>
+                <div><Label>Not (isteğe bağlı)</Label><Input value={scheduleForm.note} onChange={e => setScheduleForm({...scheduleForm, note: e.target.value})} /></div>
+                <Button type="submit" className="w-full">Kaydet</Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -332,11 +326,11 @@ const RoomDetailPage = () => {
                 <Clock className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{event.description}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(event.created_at).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{new Date(event.created_at).toLocaleString('tr-TR')}</p>
                 </div>
               </div>
             ))}
-            {timeline.length === 0 && <p className="text-muted-foreground text-sm">No activity yet</p>}
+            {timeline.length === 0 && <p className="text-muted-foreground text-sm">Henüz aktivite yok</p>}
           </TabsContent>
 
           <TabsContent value="complaints" className="space-y-2">
@@ -346,7 +340,7 @@ const RoomDetailPage = () => {
                   <div className="min-w-0">
                     <p className="font-medium text-sm">{c.complaint_type}</p>
                     {c.description && <p className="text-xs text-muted-foreground mt-1">{c.description}</p>}
-                    <p className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString('tr-TR')}</p>
                   </div>
                   <div className="flex gap-1 shrink-0">
                     <StatusBadge status={c.status} />
@@ -365,7 +359,7 @@ const RoomDetailPage = () => {
                     <p className="font-medium text-sm">{cr.cleaner?.full_name}</p>
                     {cr.notes && <p className="text-xs text-muted-foreground">{cr.notes}</p>}
                   </div>
-                  <p className="text-xs text-muted-foreground">{new Date(cr.cleaned_at).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{new Date(cr.cleaned_at).toLocaleString('tr-TR')}</p>
                 </div>
               </div>
             ))}
