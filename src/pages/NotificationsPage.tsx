@@ -1,16 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/i18n/LanguageContext';
 import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 
 const NotificationsPage = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
-  const { toast } = useToast();
   const [notifications, setNotifications] = useState<any[]>([]);
 
   const fetchNotifications = async () => {
@@ -34,14 +30,14 @@ const NotificationsPage = () => {
     <AppLayout>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">{t.notifications as string}</h1>
+          <h1 className="text-2xl font-bold">Bildirimler</h1>
           {notifications.some(n => !n.is_read) && (
-            <Button size="sm" variant="outline" onClick={markAllRead}>{t.mark_read as string}</Button>
+            <Button size="sm" variant="outline" onClick={markAllRead}>Tümünü Okundu İşaretle</Button>
           )}
         </div>
 
         {notifications.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t.no_notifications as string}</p>
+          <p className="text-muted-foreground text-center py-8">Bildirim yok</p>
         ) : (
           <div className="space-y-2">
             {notifications.map(n => (
@@ -51,7 +47,7 @@ const NotificationsPage = () => {
                     <div>
                       <p className="font-medium text-sm">{n.title}</p>
                       <p className="text-sm text-muted-foreground">{n.message}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{new Date(n.created_at).toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{new Date(n.created_at).toLocaleString('tr-TR')}</p>
                     </div>
                     {!n.is_read && (
                       <Button size="sm" variant="ghost" onClick={() => markRead(n.id)}>✓</Button>

@@ -1,11 +1,11 @@
 import React from 'react';
 
 const WEEKDAYS = [
-  { label: 'Mon', idx: 1 },
-  { label: 'Tue', idx: 2 },
-  { label: 'Wed', idx: 3 },
-  { label: 'Thu', idx: 4 },
-  { label: 'Fri', idx: 5 },
+  { label: 'Pzt', idx: 1 },
+  { label: 'Sal', idx: 2 },
+  { label: 'Çar', idx: 3 },
+  { label: 'Per', idx: 4 },
+  { label: 'Cum', idx: 5 },
 ];
 
 const HOURS = Array.from({ length: 10 }, (_, i) => 8 + i); // 8..17
@@ -25,7 +25,7 @@ interface Props {
 
 export const QRTimetableGrid: React.FC<Props> = ({ schedules }) => {
   const now = new Date();
-  const currentDay = now.getDay(); // 0=Sun
+  const currentDay = now.getDay();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   const toMinutes = (t: string) => {
@@ -51,7 +51,6 @@ export const QRTimetableGrid: React.FC<Props> = ({ schedules }) => {
     return currentMinutes >= lStart && currentMinutes < lEnd;
   };
 
-  // Track rendered lessons to handle multi-hour spans
   const rendered = new Set<string>();
 
   const getSpan = (s: Schedule, hour: number) => {
@@ -89,7 +88,6 @@ export const QRTimetableGrid: React.FC<Props> = ({ schedules }) => {
                   if (!lesson) {
                     return <td key={hour} className="border border-border p-1"></td>;
                   }
-                  // Already rendered this lesson from an earlier hour?
                   const key = lesson.id + '-' + day.idx;
                   if (rendered.has(key)) {
                     return <td key={hour} className="border border-border p-1"></td>;
@@ -116,7 +114,7 @@ export const QRTimetableGrid: React.FC<Props> = ({ schedules }) => {
                       )}
                       {current && (
                         <span className="inline-block mt-0.5 text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-medium">
-                          Now
+                          Şu an
                         </span>
                       )}
                     </td>

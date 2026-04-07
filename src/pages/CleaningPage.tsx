@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/i18n/LanguageContext';
 import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { RoomTypeBadge } from '@/components/StatusBadges';
@@ -9,7 +8,6 @@ import { Link } from 'react-router-dom';
 
 const CleaningPage = () => {
   const { user, profile } = useAuth();
-  const { t } = useLanguage();
   const [rooms, setRooms] = useState<any[]>([]);
   const [records, setRecords] = useState<any[]>([]);
 
@@ -32,7 +30,6 @@ const CleaningPage = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Realtime subscription for rooms and cleaning_records
   useEffect(() => {
     const channel = supabase
       .channel('cleaning-page')
@@ -46,10 +43,10 @@ const CleaningPage = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">{t.nav_cleaning as string}</h1>
+        <h1 className="text-2xl font-bold">Temizlik</h1>
 
         <div>
-          <h2 className="text-lg font-semibold mb-3">{t.assigned_rooms as string}</h2>
+          <h2 className="text-lg font-semibold mb-3">Atanmış Odalar</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {rooms.map(room => (
               <Link key={room.id} to={`/cleaning/room/${room.id}`}>
@@ -64,19 +61,19 @@ const CleaningPage = () => {
                     </div>
                     {room.last_cleaned_at && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        {t.room_last_cleaned as string}: {new Date(room.last_cleaned_at).toLocaleString()}
+                        Son Temizlik: {new Date(room.last_cleaned_at).toLocaleString('tr-TR')}
                       </p>
                     )}
                   </CardContent>
                 </Card>
               </Link>
             ))}
-            {rooms.length === 0 && <p className="text-muted-foreground col-span-full">No assigned rooms</p>}
+            {rooms.length === 0 && <p className="text-muted-foreground col-span-full">Atanmış oda yok</p>}
           </div>
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-3">{t.recent_activity as string}</h2>
+          <h2 className="text-lg font-semibold mb-3">Son Temizlik Kayıtları</h2>
           <div className="space-y-2">
             {records.map(r => (
               <Card key={r.id}>
@@ -89,15 +86,15 @@ const CleaningPage = () => {
                     </div>
                     <div className="text-right">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${r.status === 'completed' ? 'status-resolved' : 'status-in-review'}`}>
-                        {r.status === 'completed' ? (t.cleaning_status_completed as string) : (t.cleaning_status_partial as string)}
+                        {r.status === 'completed' ? 'Tamamlandı' : 'Kısmi'}
                       </span>
-                      <p className="text-xs text-muted-foreground mt-1">{new Date(r.cleaned_at).toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{new Date(r.cleaned_at).toLocaleString('tr-TR')}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
-            {records.length === 0 && <p className="text-muted-foreground">No cleaning records yet</p>}
+            {records.length === 0 && <p className="text-muted-foreground">Henüz temizlik kaydı yok</p>}
           </div>
         </div>
       </div>
