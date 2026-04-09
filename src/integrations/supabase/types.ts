@@ -341,6 +341,7 @@ export type Database = {
       }
       rooms: {
         Row: {
+          assigned_person_name: string | null
           building: string
           cleaner_id: string | null
           created_at: string
@@ -349,12 +350,14 @@ export type Database = {
           is_active: boolean
           last_cleaned_at: string | null
           manager_id: string | null
+          notes: string | null
           qr_token: string
           room_name: string
           room_number: string
           room_type: Database["public"]["Enums"]["room_type"]
         }
         Insert: {
+          assigned_person_name?: string | null
           building: string
           cleaner_id?: string | null
           created_at?: string
@@ -363,12 +366,14 @@ export type Database = {
           is_active?: boolean
           last_cleaned_at?: string | null
           manager_id?: string | null
+          notes?: string | null
           qr_token?: string
           room_name: string
           room_number: string
           room_type: Database["public"]["Enums"]["room_type"]
         }
         Update: {
+          assigned_person_name?: string | null
           building?: string
           cleaner_id?: string | null
           created_at?: string
@@ -377,6 +382,7 @@ export type Database = {
           is_active?: boolean
           last_cleaned_at?: string | null
           manager_id?: string | null
+          notes?: string | null
           qr_token?: string
           room_name?: string
           room_number?: string
@@ -467,6 +473,7 @@ export type Database = {
         | "laboratory"
         | "toilet_wc"
         | "corridor"
+        | "mutfak"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -605,6 +612,7 @@ export const Constants = {
         "laboratory",
         "toilet_wc",
         "corridor",
+        "mutfak",
       ],
     },
   },
