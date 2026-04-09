@@ -27,6 +27,7 @@ const ROOM_TYPE_LABELS: Record<string, string> = {
   laboratory: 'Laboratuvar',
   toilet_wc: 'Tuvalet / WC',
   corridor: 'Koridor',
+  mutfak: 'Mutfak',
 };
 
 export const StatusBadge = ({ status }: { status: string }) => {
