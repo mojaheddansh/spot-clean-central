@@ -40,7 +40,7 @@ function detectRoomType(sectionHeader: string, roomName: string): string {
   if (t('koridor')) return 'corridor';
   if (t('sınıf') || t('derslik')) return 'classroom';
   if (t('ofis') || t('dolu ofis') || t('boş ofis')) return 'office';
-  if (t('mutfak')) return 'office';
+  if (t('mutfak')) return 'mutfak';
   if (t('seminer')) return 'meeting_room';
   if (t('depo') || t('arşiv')) return 'office';
   if (t('atölye') || t('atöl')) return 'laboratory';
