@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { isComplaintAllowed, COMPLAINT_NOT_ALLOWED_MESSAGE } from '@/lib/complaintRules';
 
 const COMPLAINT_TYPES: Record<string, string> = {
   dirty_floor: 'Kirli Zemin', dirty_desk: 'Kirli Masa', trash_full: 'Çöp Dolu',
@@ -28,6 +29,7 @@ const UserComplaintPage = () => {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const complaintsAllowed = room ? isComplaintAllowed(room.room_type) : true;
 
   useEffect(() => {
     if (roomId) supabase.from('rooms').select('*').eq('id', roomId).single().then(({ data }) => setRoom(data));
@@ -64,6 +66,18 @@ const UserComplaintPage = () => {
           <CheckCircle className="h-16 w-16 text-success" />
           <h2 className="text-xl font-semibold">Şikâyetiniz başarıyla gönderildi</h2>
           <Button onClick={() => navigate('/dashboard')}>Panel</Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (room && !complaintsAllowed) {
+    return (
+      <AppLayout>
+        <div className="max-w-lg space-y-4">
+          <h1 className="text-xl font-bold">Şikâyet Kullanılamaz</h1>
+          <p className="text-muted-foreground">{COMPLAINT_NOT_ALLOWED_MESSAGE}</p>
+          <Button variant="outline" onClick={() => navigate(-1)}>Geri</Button>
         </div>
       </AppLayout>
     );
