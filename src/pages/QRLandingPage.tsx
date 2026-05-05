@@ -39,7 +39,10 @@ const QRLandingPage = () => {
     if (!authLoading && user && profile && room) {
       const role = profile.role;
       if (role === 'cleaner') navigate(`/cleaning/room/${room.id}`);
-      else if (role === 'user') navigate(`/complaint/room/${room.id}`);
+      else if (role === 'user') {
+        if (isComplaintAllowed(room.room_type)) navigate(`/complaint/room/${room.id}`);
+        // else: stay on QR landing page (shows info + timetable, no complaint UI)
+      }
       else navigate(`/rooms/${room.id}`);
     }
   }, [authLoading, user, profile, room]);
