@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { isComplaintAllowed, COMPLAINT_NOT_ALLOWED_MESSAGE } from '@/lib/complaintRules';
 
 const COMPLAINT_TYPES: Record<string, string> = {
   dirty_floor: 'Kirli Zemin', dirty_desk: 'Kirli Masa', trash_full: 'Çöp Dolu',
@@ -27,6 +28,7 @@ const AnonymousComplaintPage = () => {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const complaintsAllowed = room ? isComplaintAllowed(room.room_type) : true;
 
   useEffect(() => {
     if (roomId) {
@@ -79,6 +81,20 @@ const AnonymousComplaintPage = () => {
           <CardContent className="pt-8 pb-8 space-y-4">
             <CheckCircle className="h-16 w-16 text-success mx-auto" />
             <h2 className="font-semibold text-lg">Şikâyetiniz başarıyla gönderildi</h2>
+            <Button variant="outline" onClick={() => navigate(-1)}>Geri</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (room && !complaintsAllowed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <Card className="w-full max-w-sm text-center">
+          <CardContent className="pt-8 pb-8 space-y-4">
+            <h2 className="font-semibold text-lg">Şikâyet Kullanılamaz</h2>
+            <p className="text-sm text-muted-foreground">{COMPLAINT_NOT_ALLOWED_MESSAGE}</p>
             <Button variant="outline" onClick={() => navigate(-1)}>Geri</Button>
           </CardContent>
         </Card>
