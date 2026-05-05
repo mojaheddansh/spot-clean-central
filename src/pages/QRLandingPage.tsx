@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RoomTypeBadge } from '@/components/StatusBadges';
 import { QRTimetableGrid } from '@/components/QRTimetableGrid';
 import { Building2, AlertTriangle, LogIn, CalendarDays, Sparkles } from 'lucide-react';
+import { isComplaintAllowed } from '@/lib/complaintRules';
 
 const QRLandingPage = () => {
   const { token } = useParams<{ token: string }>();
@@ -60,6 +61,7 @@ const QRLandingPage = () => {
   const loginUrl = `/login?returnTo=/qr/${token}`;
   const showSchedule = schedules.length > 0 && (settings.show_today_schedule_on_qr_page || settings.show_weekly_schedule_on_qr_page);
   const showLastCleaning = settings.show_last_cleaning_time_on_qr_page;
+  const complaintsAllowed = isComplaintAllowed(room.room_type);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -100,16 +102,18 @@ const QRLandingPage = () => {
         )}
 
         {/* 2. Şikâyet */}
-        <Card>
-          <CardContent className="pt-4 space-y-2">
-            <Link to={`/complaint/anonymous/${room.id}`}>
-              <Button className="w-full gap-2" size="lg">
-                <AlertTriangle className="h-5 w-5" />
-                Anonim Şikâyet Oluştur
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+        {complaintsAllowed && (
+          <Card>
+            <CardContent className="pt-4 space-y-2">
+              <Link to={`/complaint/anonymous/${room.id}`}>
+                <Button className="w-full gap-2" size="lg">
+                  <AlertTriangle className="h-5 w-5" />
+                  Anonim Şikâyet Oluştur
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 3. Giriş */}
         <Card>
