@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { isComplaintAllowed, COMPLAINT_NOT_ALLOWED_MESSAGE } from '@/lib/complaintRules';
-import { Link } from 'react-router-dom';
 
 const COMPLAINT_TYPES: Record<string, string> = {
   dirty_floor: 'Kirli Zemin', dirty_desk: 'Kirli Masa', trash_full: 'Çöp Dolu',
