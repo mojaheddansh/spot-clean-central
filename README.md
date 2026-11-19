@@ -1,6 +1,6 @@
 # CampusClean
 
-CampusClean helps a university keep track of room cleaning, complaints, and class schedules. Each room can have a QR code that opens its schedule and a complaint form.
+CampusClean helps a university keep track of room cleaning, complaints, and class schedules. Each room can have a QR code that opens its schedule and, where available, a complaint form.
 
 ## What it does
 
